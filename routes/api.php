@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CurrencyController;
@@ -19,5 +20,19 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/currencies', [CurrencyController::class, 'index']);
-Route::get('/currency/{id}', [CurrencyController::class, 'show'])->where(['id' => '[0-9]+']);
+Route::group([
+
+    'middleware' => 'api',
+    'prefix' => 'auth'
+
+], function ($router) {
+
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::post('me', [AuthController::class, 'me']);
+
+});
+
+Route::get('/currencies', [CurrencyController::class, 'index'])->middleware(['auth:api']);
+Route::get('/currency/{id}', [CurrencyController::class, 'show'])->where(['id' => '[0-9]+'])->middleware(['auth:api']);
